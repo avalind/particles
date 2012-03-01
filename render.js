@@ -23,9 +23,10 @@ function init(canvas_name, width, height) {
 };
 
 function StateManager() {
-  this.timestep_in_ms = 50;
+  this.timestep_in_ms = 75;
   this.ts_secs = this.timestep_in_ms / 1000.0;
   this.old_time = 0;
+  this.rend = new Renderer(this.ts_secs);
 };
 
 StateManager.prototype = {
@@ -37,30 +38,53 @@ StateManager.prototype = {
       obj.single_frame_func(t) 
     });
   
-    // Find the time elapsed since
-    // the last call to single_frame_func;
-    var dt = new_time - this.old_time;
+    // A quick hack
+    if(this.old_time === 0) {
+      var dt = 500;
+    } else {
+      // Find the time elapsed since
+      // the last call to single_frame_func;
+      var dt = new_time - this.old_time;
+    };
+
     this.old_time = new_time;
     
+
     // Advance the physics simulation accordingly.
     // @see http://gafferongames.com/game-physics/fix-your-timestep/
     var decrementor = dt;
+    alert(decrementor);
     while(decrementor >= this.timestep_in_ms) {
       // advance physics.
       decrementor -= this.timestep_in_ms;
+      this.rend.render(); // TOTALLY misnamed method.
     };
 
     // render. The problem here, is that the remainder
     // in decrementor % timestep_in_ms gets thrown away.
+    alert("Rendering.");
     
-    
-    
-    alert(dt);
   },
 
   start: function() {
-    this.single_frame_func(0);
+    // Initialize with the time in msecs since epoch.
+    var d = new Date();
+    this.single_frame_func(d.getTime());
   },
+};
+
+function Renderer(ts) {
+  this.pos = new Vector2D(1.0, 0.0);
+  this.oldpos = new Vector2D(-1.0, 0.0);
+  this.acc = new Vector2D(0.5, 0.5);
+  this.ts = ts;
+};
+
+Renderer.prototype = {
+  render: function() {
+    verlet_vector2d(this.pos, this.oldpos, this.acc, this.ts);
+    alert(this.pos.view());
+  }
 };
 
 function main() {
