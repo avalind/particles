@@ -22,21 +22,23 @@ function init(canvas_name, width, height) {
   }
 };
 
+var DEBUG = false;
+
 function StateManager() {
-  this.timestep_in_ms = 75;
+  this.timestep_in_ms = 40;
   this.ts_secs = this.timestep_in_ms / 1000.0;
   this.old_time = 0;
   this.rend = new Renderer(this.ts_secs);
+  this.ctx = init("screen", 800, 600);
+  this.test_system = generateSpecialSystem(this.ts_secs);
+  
+  this.decrementor = 0;
+  this.render_calls = 0;
+  this.physics_calls = 0;
 };
 
 StateManager.prototype = {
   single_frame_func: function(new_time) {
-    // Because of the wierd semantics of this
-    // we wrap it in a closure.
-    var obj = this;
-    requestAnimFrame(function(t) {
-      obj.single_frame_func(t) 
-    });
   
     // A quick hack
     if(this.old_time === 0) {
@@ -52,18 +54,39 @@ StateManager.prototype = {
 
     // Advance the physics simulation accordingly.
     // @see http://gafferongames.com/game-physics/fix-your-timestep/
-    var decrementor = dt;
-    alert(decrementor);
-    while(decrementor >= this.timestep_in_ms) {
+    // TODO: add the final interpolation step between the last and the current world state.
+    this.decrementor += dt;
+    
+    if(DEBUG)
+      alert(decrementor);
+    
+    while(this.decrementor >= this.timestep_in_ms) {
       // advance physics.
-      decrementor -= this.timestep_in_ms;
-      this.rend.render(); // TOTALLY misnamed method.
+      this.decrementor -= this.timestep_in_ms;
+      this.test_system.sumActingForces();
+      this.test_system.integrate();
+      this.test_system.resolveConstraints();
+
+      this.physics_calls++;
     };
 
+    
+    var ph_out = document.getElementById("physicscalls");
+    ph_out.value = this.physics_calls;
+
+    this.rend.render_system(this.ctx, this.test_system);
+    this.render_calls++;
+    var out = document.getElementById("rendercalls");
+    out.value = this.render_calls;
     // render. The problem here, is that the remainder
     // in decrementor % timestep_in_ms gets thrown away.
-    alert("Rendering.");
-    
+    if(DEBUG)
+      alert("Rendering.");
+  
+    var obj = this;
+    requestAnimFrame(function(t) {
+      obj.single_frame_func(t);
+    });
   },
 
   start: function() {
@@ -74,38 +97,40 @@ StateManager.prototype = {
 };
 
 function Renderer(ts) {
-  this.pos = new Vector2D(1.0, 0.0);
-  this.oldpos = new Vector2D(-1.0, 0.0);
-  this.acc = new Vector2D(0.5, 0.5);
-  this.ts = ts;
 };
 
 Renderer.prototype = {
   render: function() {
-    verlet_vector2d(this.pos, this.oldpos, this.acc, this.ts);
-    alert(this.pos.view());
-  }
+  
+  },
+
+  // The rendering works ok.
+  render_system: function(target_context, system) {
+    // Save the transformation matrix, before cleaning
+    // the canvas, then restore the matrix.
+    target_context.save();
+    target_context.setTransform(1, 0, 0, 1, 0, 0);
+    target_context.clearRect(0, 0, 800, 600); // TODO: move hardcoded stuff.
+    target_context.restore();
+
+
+
+    target_context.fillStyle = "rgb(255, 0, 0)";
+    for(var j = 0; j < system.n_particles; j++) {
+      var p = system.positions[j];
+      target_context.fillRect(p.x, p.y, 0.01, 0.01);
+    };
+  },
 };
 
 function main() {
-  var ct = init("screen", 800, 600);
-  ct.fillStyle = "rgb(255,0,0);";
-  ct.fillRect(0, 0, 0.1, 0.1);
-
-  ct.fillStyle = "rgba(255,0,0,50);";
-  ct.fillRect(0.5, 0.5, 0.01, 0.01);
-
-  var p = new Vector2D(1.0, 0.0);
-  var op = new Vector2D(-1.0, 0.0);
-  var a = new Vector2D(0.5, 0.5);
-  var t = 0.01;
   var m = new StateManager();
 
-  verlet_vector2d(p, op, a, t);
+  /**verlet_vector2d(p, op, a, t);
   alert("pos = " + p.view() + " oldpos = " + op.view());
 
   verlet_vector2d(p, op, a, t);
   alert("pos = " + p.view() + " oldpos = " + op.view());
-  
+  */
   m.start();
 };
