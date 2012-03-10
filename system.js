@@ -9,6 +9,7 @@ function ParticleSystem(n_particles, timestep) {
   this.acceleration = new Array();
   this.grav = new Vector2D(0.0, -0.02);
   this.timestep = timestep;
+  this.constraints = Array();
 };
 
 ParticleSystem.prototype = {
@@ -51,7 +52,7 @@ ParticleSystem.prototype = {
       };
 
       // Satisfy the second constraint.
-      var rest_length = 0.1;
+      /*var rest_length = 0.1;
       var first = this.positions[0];
       var second = this.positions[1];
       var delta = second.sub(first);
@@ -61,8 +62,25 @@ ParticleSystem.prototype = {
 
       this.positions[0] = this.positions[0].add( update );
       this.positions[1] = this.positions[1].sub( update );
-
+*/
       // anchor the first particle at origo.
+      //this.positions[0] = new Vector2D(0.0, 0.0);
+      
+      /* Constraint satisfaction */
+      for(var j = 0; j < this.constraints.length; j++) {
+        var first = this.positions[this.constraints[j].a_index];
+        var second = this.positions[this.constraints[j].b_index];
+        var delta = second.sub(first);
+        var delta_length = delta.length();
+        var diff = (delta_length - this.constraints[j].rest_length) / delta_length;
+        var update = delta.scale(0.5 * diff);
+
+        this.positions[this.constraints[j].a_index] = this.positions[this.constraints[j].a_index].add(update);
+        this.positions[this.constraints[j].b_index] = this.positions[this.constraints[j].b_index].sub(update);
+      };
+
+
+
       this.positions[0] = new Vector2D(0.0, 0.0);
     };
   },
@@ -72,6 +90,10 @@ ParticleSystem.prototype = {
     this.old_positions.push(op);
     this.acceleration.push(acc);
     this.masses.push(m);
+  },
+
+  addConstraint: function(c) {
+    this.constraints.push(c);
   },
 };
 
@@ -97,5 +119,6 @@ function generateSpecialSystem(timestep) {
   var s = new ParticleSystem(2, timestep);
   s.addParticle(new Vector2D(0.0, 0.0), new Vector2D(0.0, 0.0), new Vector2D(0.0, 0.0), 1.0);
   s.addParticle(new Vector2D(0.1, 0.0), new Vector2D(0.1, 0.0), new Vector2D(0.0, 0.0), 2.0);
+  s.addConstraint(new Constraint(0, 1, 0.1));
   return s;
 };
