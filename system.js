@@ -81,7 +81,7 @@ ParticleSystem.prototype = {
 
 
 
-      this.positions[0] = new Vector2D(0.0, 0.0);
+      //this.positions[0] = new Vector2D(0.0, 0.0);
     };
   },
 
@@ -116,9 +116,18 @@ function generateSystem(n, timestep) {
 }
 
 function generateSpecialSystem(timestep) {
-  var s = new ParticleSystem(2, timestep);
+  var s = new ParticleSystem(4, timestep);
+  var diag_c =  Math.sqrt(0.1*0.1 + 0.1*0.1);
   s.addParticle(new Vector2D(0.0, 0.0), new Vector2D(0.0, 0.0), new Vector2D(0.0, 0.0), 1.0);
   s.addParticle(new Vector2D(0.1, 0.0), new Vector2D(0.1, 0.0), new Vector2D(0.0, 0.0), 2.0);
+  s.addParticle(new Vector2D(0.0, 0.1), new Vector2D(0.0, 0.1), new Vector2D(0.0, 0.0), 3.0);
+  s.addParticle(new Vector2D(0.1, 0.1), new Vector2D(0.1, 0.1), new Vector2D(0.0, 0.0), 4.0);
+
   s.addConstraint(new Constraint(0, 1, 0.1));
+  s.addConstraint(new Constraint(0, 2, 0.1));
+  s.addConstraint(new Constraint(1, 3, 0.1));
+  s.addConstraint(new Constraint(2, 3, 0.1));
+  s.addConstraint(new Constraint(0, 3, diag_c));
+  s.addConstraint(new Constraint(1, 2, diag_c));
   return s;
 };

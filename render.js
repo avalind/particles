@@ -114,11 +114,32 @@ Renderer.prototype = {
     target_context.restore();
 
 
-
+    // Render particles.
     target_context.fillStyle = "rgb(255, 0, 0)";
     for(var j = 0; j < system.n_particles; j++) {
       var p = system.positions[j];
       target_context.fillRect(p.x, p.y, 0.01, 0.01);
+    };
+    
+    target_context.strokeStyle = "#000";
+    target_context.lineWidth = 1.0;
+    target_context.beginPath();
+    target_context.moveTo(0.0, 0.0);
+    target_context.beginPath(1.0, 1.0);
+    target_context.stroke();
+    target_context.closePath();
+
+
+    // Render constraints
+    for(var j = 0; j < system.constraints.length; j++) {
+      var a = system.positions[system.constraints[j].a_index];
+      var b = system.positions[system.constraints[j].b_index];
+      /*target_context.beginPath();
+      target_context.translate(a.x, a.y);
+      target_context.lineTo(b.x, b.y);
+      target_context.closePath();
+      target_context.stroke();
+*/
     };
   },
 };
