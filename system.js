@@ -47,8 +47,8 @@ ParticleSystem.prototype = {
       for(var i = 0; i < this.n_particles; i++) {
         // Absolutly wonderful idea from
         // http://www.pagines.ma1.upc.edu/~susin/files/AdvancedCharacterPhysics.pdf
-        this.positions[i].x = min(max(this.positions[i].x, -1), 1);
-        this.positions[i].y = min(max(this.positions[i].y, -1), 1);
+        this.positions[i].x = min(max(this.positions[i].x, 0), 1);
+        this.positions[i].y = min(max(this.positions[i].y, 0), 1);
       };
 
       // Satisfy the second constraint.
@@ -118,11 +118,10 @@ function generateSystem(n, timestep) {
 function generateSpecialSystem(timestep) {
   var s = new ParticleSystem(4, timestep);
   var diag_c =  Math.sqrt(0.1*0.1 + 0.1*0.1);
-  s.addParticle(new Vector2D(0.0, 0.0), new Vector2D(0.0, 0.0), new Vector2D(0.0, 0.0), 1.0);
-  s.addParticle(new Vector2D(0.1, 0.0), new Vector2D(0.1, 0.0), new Vector2D(0.0, 0.0), 2.0);
-  s.addParticle(new Vector2D(0.0, 0.1), new Vector2D(0.0, 0.1), new Vector2D(0.0, 0.0), 3.0);
-  s.addParticle(new Vector2D(0.1, 0.1), new Vector2D(0.1, 0.1), new Vector2D(0.0, 0.0), 4.0);
-
+  s.addParticle(new Vector2D(0.5, 0.5), new Vector2D(0.5, 0.5), new Vector2D(0.0, 0.0), 1.0);
+  s.addParticle(new Vector2D(0.6, 0.0), new Vector2D(0.6, 0.0), new Vector2D(0.0, 0.0), 2.0);
+  s.addParticle(new Vector2D(0.0, 0.6), new Vector2D(0.0, 0.6), new Vector2D(0.0, 0.0), 3.0);
+  s.addParticle(new Vector2D(0.6, 0.6), new Vector2D(0.6, 0.6), new Vector2D(0.0, 0.0), 4.0);
   s.addConstraint(new Constraint(0, 1, 0.1));
   s.addConstraint(new Constraint(0, 2, 0.1));
   s.addConstraint(new Constraint(1, 3, 0.1));

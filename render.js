@@ -10,11 +10,6 @@ function init(canvas_name, width, height) {
 
   if(canv.getContext) {
     var ctx = canv.getContext('2d');
-    var xscale = width / (1 - (-1));
-    var yscale = height / (1 - (-1));
-    ctx.setTransform(xscale, 0,
-                     0, -yscale,
-                     width / 2, height / 2);
     return ctx;
   }
   else {
@@ -108,19 +103,16 @@ Renderer.prototype = {
   render_system: function(target_context, system) {
     // Save the transformation matrix, before cleaning
     // the canvas, then restore the matrix.
-    target_context.save();
-    target_context.setTransform(1, 0, 0, 1, 0, 0);
-    target_context.clearRect(0, 0, 800, 600); // TODO: move hardcoded stuff.
-    target_context.restore();
-
+    target_context.clearRect(0, 0, 800, 600);
 
     // Render particles.
-    target_context.fillStyle = "rgb(255, 0, 0)";
+    target_context.fillStyle = "rgba(255, 255, 255)";
     for(var j = 0; j < system.n_particles; j++) {
-      var p = system.positions[j];
-      target_context.fillRect(p.x, p.y, 0.01, 0.01);
+      var p = map_to_screen({"width": 800, "height": 600}, system.positions[j]);
+      //target_context.fillRect(p.x-2, p.y-2, 2, 2);
     };
     
+    /*
     target_context.strokeStyle = "#000";
     target_context.lineWidth = 1.0;
     target_context.beginPath();
@@ -128,18 +120,18 @@ Renderer.prototype = {
     target_context.beginPath(1.0, 1.0);
     target_context.stroke();
     target_context.closePath();
-
-
+    */
+  
     // Render constraints
+    var mapctx = {"width": 800, "height": 600};
     for(var j = 0; j < system.constraints.length; j++) {
-      var a = system.positions[system.constraints[j].a_index];
-      var b = system.positions[system.constraints[j].b_index];
-      /*target_context.beginPath();
-      target_context.translate(a.x, a.y);
+      var a = map_to_screen(mapctx, system.positions[system.constraints[j].a_index]);
+      var b = map_to_screen(mapctx, system.positions[system.constraints[j].b_index]);
+      target_context.beginPath();
+      target_context.moveTo(a.x, a.y);
       target_context.lineTo(b.x, b.y);
       target_context.closePath();
       target_context.stroke();
-*/
     };
   },
 };
